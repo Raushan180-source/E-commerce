@@ -1,0 +1,197 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>E-Shop - MERN E-commerce</title>
+  <style>
+    /* Floating AI Icon */
+    #ai-icon {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      width: 60px;
+      height: 60px;
+      background: #4a90e2;
+      border-radius: 50%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      cursor: pointer;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+      z-index: 9999;
+      font-size: 30px;
+      color: white;
+      transition: transform 0.2s;
+    }
+    #ai-icon:hover {
+      transform: scale(1.1);
+    }
+
+    /* Chatbot Container */
+    #chatbot {
+      position: fixed;
+      bottom: 90px;
+      right: 20px;
+      width: 320px;
+      height: 450px;
+      background: white;
+      border-radius: 16px;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+      display: none; /* hidden initially */
+      flex-direction: column;
+      overflow: hidden;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      z-index: 9998;
+      transition: all 0.3s ease;
+    }
+
+    #chat-header {
+      background: linear-gradient(90deg, #4a90e2, #357ABD);
+      color: white;
+      padding: 12px;
+      text-align: center;
+      font-weight: bold;
+      font-size: 16px;
+      cursor: pointer;
+    }
+
+    #chat-messages {
+      flex: 1;
+      padding: 10px;
+      overflow-y: auto;
+      font-size: 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .msg {
+      padding: 10px 14px;
+      border-radius: 20px;
+      max-width: 80%;
+      word-wrap: break-word;
+      line-height: 1.4;
+    }
+    .user {
+      background: #DCF8C6;
+      align-self: flex-end;
+      border-bottom-right-radius: 0;
+    }
+    .bot {
+      background: #f1f0f0;
+      align-self: flex-start;
+      border-bottom-left-radius: 0;
+      position: relative;
+    }
+
+    /* Typing animation */
+    .typing {
+      display: flex;
+      gap: 4px;
+    }
+    .typing span {
+      width: 8px;
+      height: 8px;
+      background: #666;
+      border-radius: 50%;
+      animation: blink 1.4s infinite both;
+    }
+    .typing span:nth-child(1) { animation-delay: 0s; }
+    .typing span:nth-child(2) { animation-delay: 0.2s; }
+    .typing span:nth-child(3) { animation-delay: 0.4s; }
+    @keyframes blink {
+      0%, 80%, 100% { opacity: 0; }
+      40% { opacity: 1; }
+    }
+
+    #chat-input {
+      display: flex;
+      border-top: 1px solid #ddd;
+      padding: 8px;
+      gap: 5px;
+    }
+    #chat-input input {
+      flex: 1;
+      border: 1px solid #ccc;
+      border-radius: 24px;
+      padding: 10px 14px;
+      outline: none;
+      font-size: 14px;
+    }
+    #chat-input button {
+      border: none;
+      background: #4a90e2;
+      color: white;
+      padding: 10px 18px;
+      border-radius: 24px;
+      cursor: pointer;
+      font-weight: bold;
+      transition: background 0.3s ease;
+    }
+    #chat-input button:hover {
+      background: #357ABD;
+    }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+  <!-- Floating AI Icon -->
+  <div id="ai-icon" onclick="toggleChat()">🤖</div>
+
+  <!-- Chatbot -->
+  <div id="chatbot">
+    <div id="chat-header" onclick="toggleChat()">The Assistant</div>
+    <div id="chat-messages"></div>
+    <div id="chat-input">
+      <input type="text" id="userInput" placeholder="Type a message..." />
+      <button onclick="sendMessage()">Send</button>
+    </div>
+  </div>
+
+  <script type="module" src="/src/main.jsx"></script>
+  <script>
+    const chatbot = document.getElementById("chatbot");
+    const aiIcon = document.getElementById("ai-icon");
+
+    function toggleChat() {
+      chatbot.style.display = chatbot.style.display === 'flex' ? 'none' : 'flex';
+    }
+
+    async function sendMessage() {
+      const input = document.getElementById("userInput");
+      const message = input.value.trim();
+      if (!message) return;
+
+      const chatBox = document.getElementById("chat-messages");
+      chatBox.innerHTML += `<div class="msg user">${message}</div>`;
+      input.value = "";
+      chatBox.scrollTop = chatBox.scrollHeight;
+
+      // Show typing animation
+      const typingDiv = document.createElement("div");
+      typingDiv.className = "msg bot";
+      typingDiv.innerHTML = `<div class="typing"><span></span><span></span><span></span></div>`;
+      chatBox.appendChild(typingDiv);
+      chatBox.scrollTop = chatBox.scrollHeight;
+
+      try {
+        const res = await fetch("http://127.0.0.1:5000/chat", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ message })
+        });
+        const data = await res.json();
+
+        typingDiv.remove();
+        chatBox.innerHTML += `<div class="msg bot">${data.reply}</div>`;
+        chatBox.scrollTop = chatBox.scrollHeight;
+      } catch (err) {
+        typingDiv.remove();
+        chatBox.innerHTML += `<div class="msg bot">Error: Could not reach server</div>`;
+        chatBox.scrollTop = chatBox.scrollHeight;
+      }
+    }
+  </script>
+</body>
+</html>
