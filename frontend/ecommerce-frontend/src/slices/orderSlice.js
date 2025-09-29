@@ -1,7 +1,7 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import axios from 'axios';
 
-const API_URL = 'http://localhost:5000/api';
+const API_URL = 'https://e-commerce-backend-fzf6.onrender.com/api';
 
 // Async thunk for creating order
 export const createOrder = createAsyncThunk(
